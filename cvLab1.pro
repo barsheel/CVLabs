@@ -25,11 +25,11 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    maintenance.cpp \
-    rawimage.cpp
+    rawimage.cpp \
+    management.cpp
 
 HEADERS  += mainwindow.h \
-    maintenance.h \
-    rawimage.h
+    rawimage.h \
+    management.h
 
 FORMS    += mainwindow.ui

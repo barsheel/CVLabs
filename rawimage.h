@@ -5,17 +5,18 @@
 #define BORDER_PROCESSING_TYPE_MIRROR   1
 
 #include <memory>
+#include <QImage>
 
 using namespace std;
 
 class RawImage
 {
 public:
-    int sizeX;
-    int sizeY;
-    unique_ptr<double> data[];
+    int width;
+    int height;
+    vector<double> data;
 
-    unique_ptr<QImage> toQImage(RawImage source);
+    unique_ptr<QImage> toQImage();
     unique_ptr<RawImage> normalize();
 
     //Свертка
@@ -29,7 +30,6 @@ public:
     unique_ptr<RawImage> sobel(int strength);
 
 
-    RawImage(RawImage);
     RawImage(QImage source);
     RawImage(int sizeX, int sizeY);
     RawImage();
