@@ -45,3 +45,13 @@ void MainWindow::on_normalizeAction_triggered()
 {
     management.get()->normalize();
 }
+
+void MainWindow::on_gaussAction_triggered()
+{
+    management.get()->gauss(5, 0);
+}
+
+void MainWindow::on_sobelAction_triggered()
+{
+    management.get()->sobel(0);
+}

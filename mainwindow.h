@@ -27,6 +27,10 @@ private slots:
 
     void on_normalizeAction_triggered();
 
+    void on_gaussAction_triggered();
+
+    void on_sobelAction_triggered();
+
 private:
     unique_ptr<Management> management;
     Ui::MainWindow *ui;

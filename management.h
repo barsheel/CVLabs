@@ -9,6 +9,7 @@
 #include <QWidget>
 #include <QLabel>
 #include <memory>
+#include "lab1.h"
 
 using namespace std;
 
@@ -22,9 +23,9 @@ public:
     Management &operator=(const Management &);
     ~Management();
 
-    shared_ptr<QImage> Management::sourceImage;
-    shared_ptr<QImage> Management::currentImage;
-    shared_ptr<QLabel> Management::imageLabel;
+    unique_ptr<QImage> Management::sourceImage;
+    unique_ptr<QImage> Management::currentImage;
+    unique_ptr<QLabel> Management::imageLabel;
 
     void Management::setImageLabel (QLabel *qLabel);
     void Management::loadImage (QString path);
@@ -32,7 +33,8 @@ public:
     void Management::reloadImage();
     void Management::drawImage();
     void Management::normalize();
-
+    void Management::gauss(int strength, int borderType);
+    void Management::sobel(int borderType);
 
 private:
     QSharedDataPointer<ManagementData> data;

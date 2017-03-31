@@ -1,38 +1,50 @@
 #ifndef RAWIMAGE_H
 #define RAWIMAGE_H
+#include <memory>
+#include <QImage>
+using namespace std;
 
 #define BORDER_PROCESSING_TYPE_NONE     0
 #define BORDER_PROCESSING_TYPE_MIRROR   1
-
-#include <memory>
-#include <QImage>
-
-using namespace std;
+#define BORDER_PROCESSING_TYPE_CYLINDER  2
 
 class RawImage
 {
 public:
+
     int width;
     int height;
-    vector<double> data;
-
-    unique_ptr<QImage> toQImage();
-    unique_ptr<RawImage> normalize();
+    vector<float> data;
 
     //Свертка
-    unique_ptr<RawImage> convolute(double kernel[], int kernelSizeX, int kernelSizeY, int borderProcessingType );
-    unique_ptr<RawImage> expand(int length, int borderProcessingType);
+    struct Kernel{
+        vector<float> value;
+        int width;
+        int height;
+        int norm;
+    };
 
-    //Масштабирование
-    unique_ptr<RawImage> scale(int scalling);
-
-    unique_ptr<RawImage> gauss(int strength);
-    unique_ptr<RawImage> sobel(int strength);
-
-
-    RawImage(QImage source);
-    RawImage(int sizeX, int sizeY);
+    RawImage(const QImage &source);
+    RawImage(const RawImage &source);
+    RawImage(const int sizeX, const int sizeY);
     RawImage();
+
+    QImage toQImage() const;
+    RawImage normalize() const;
+
+    vector<int> calculateKernelOffsets(const Kernel &kernel, const int width) const;
+
+
+    int getPxOffset(const int x, const int y) const;
+    float getPixel(const int x, const int y) const;
+    float getPixel(const int x, const int y, const int borderProcessingType) const;
+    void setPixel(const int x, const int y, const float val);
+
+    RawImage convolute(const Kernel &kernel, const int borderProcessingType) const;
+
+    static Kernel makeKernel(const int width, const int height, const vector<float> &values);
 };
+
+
 
 #endif // RAWIMAGE_H
