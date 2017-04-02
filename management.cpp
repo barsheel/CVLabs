@@ -1,6 +1,6 @@
 #include "management.h"
 #include "rawimage.h"
-
+#define GAUSS_STRENGTH 3
 class ManagementData : public QSharedData
 {
 public:
@@ -34,6 +34,7 @@ void Management::loadImage (QString path)
     Management::sourceImage = unique_ptr<QImage>(new QImage(path));
     Management::currentImage = unique_ptr<QImage>(new QImage(path));
     Management::drawImage();
+
 }
 
 
@@ -56,12 +57,6 @@ void Management::drawImage()
     unique_ptr<RawImage> raw((new RawImage(*Management::currentImage.get())));
     Management::currentImage = make_unique<QImage>(raw.get()->toQImage());
     Management::imageLabel->setPixmap( QPixmap::fromImage(*(Management::currentImage.get()), Qt::AutoColor));
-
-    /*QImage img = ((Management::currentImage.get()))->scaled((uint)2000,
-                                          (uint)2000,
-                                          Qt::AspectRatioMode::IgnoreAspectRatio,
-                                          Qt::TransformationMode::FastTransformation);
-    Management::imageLabel->setPixmap( QPixmap::fromImage(img));*/
 }
 
 
@@ -78,9 +73,7 @@ void Management::gauss(int strength, int borderType)
 {
     unique_ptr<RawImage> raw((new RawImage(*Management::currentImage.get())));
     raw = make_unique<RawImage>(
-                Lab1:: lab1Gauss(*(raw.get()),
-                            3,
-                            BORDER_PROCESSING_TYPE_MIRROR));
+                Lab1:: lab1Gauss(*(raw.get()), GAUSS_STRENGTH, BORDER_PROCESSING_TYPE_MIRROR));
     Management::currentImage = make_unique<QImage>(raw->toQImage());
     drawImage();
 }

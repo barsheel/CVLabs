@@ -14,20 +14,26 @@ public:
 
     int width;
     int height;
-    vector<float> data;
+    unique_ptr<float[]> data;
 
     //Свертка
     struct Kernel{
         vector<float> value;
         int width;
         int height;
-        int norm;
     };
 
     RawImage(const QImage &source);
     RawImage(const RawImage &source);
     RawImage(const int sizeX, const int sizeY);
     RawImage();
+    RawImage& operator=(RawImage&& img)
+    {
+        this->width = img.width;
+        this->height = img.height;
+        data = move(img.data);
+        return *this;
+    }
 
     QImage toQImage() const;
     RawImage normalize() const;

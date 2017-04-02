@@ -18,10 +18,10 @@ RawImage::RawImage(const RawImage &source)
 {
     width = source.width;
     height = source.height;
-    data.resize(width * height);
-    copy(source.data.begin(),
-         source.data.end(),
-         data.begin());
+    data = make_unique<float[]>(width * height);
+        copy(source.data.get(),
+             source.data.get() + width*height,
+             data.get());
 }
 
 
@@ -30,9 +30,9 @@ RawImage::RawImage(const QImage &source)
     width = source.width();
     height = source.height();
     QByteArray byteArray((char*)source.bits(), source.byteCount());
-    data.reserve(width * height);
+    data = make_unique<float[]>(width * height);
     for(int i = 0; i < width*height; i++) {
-        data.push_back(((float)((uchar)byteArray[i*4]) * 0.114 +
+        data.get()[i]=(((float)((uchar)byteArray[i*4]) * 0.114 +
                         (float)((uchar)byteArray[i*4+1]) * 0.587 +
                         ((float)((uchar)byteArray[i*4+2]) * 0.299)) / 255
         );
@@ -44,32 +44,38 @@ RawImage::RawImage(const int sizeX, const int sizeY)
 {
     width = sizeX;
     height = sizeY;
-    data.reserve(width * height );
+    data = make_unique<float[]>(width * height);
     for(int i = 0; i < width*height; i++) {
-        data.push_back(0);
+        data.get()[i] = 0;
     }
 }
 
 
+
 QImage RawImage::toQImage() const
 {
-    uchar* arr=(new uchar[width * height * 4]);
-    for(int i = 0; i < width*height; i++)
-    {
-        arr[i*4] = (uchar)(data[i] * 255);
-        arr[i*4+1] = (uchar)arr[i*4];
-        arr[i*4+2] = (uchar)arr[i*4];
-        arr[i*4+3] = (uchar)255;
-    }
-    return *(new QImage(arr,width,height,QImage::Format_RGB32));
+    QImage img(width, height, QImage::Format_RGB32);
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                int ret = 0;
+                int val = (int)(data[i * width + j] * 255);
+                for(int i = 0; i < 3; i++)
+               {
+                    ret <<= 8;
+                    ret += val;
+                }
+                img.setPixel(j, i, ret);
+            }
+        }
+        return img;
 }
 
 
 RawImage RawImage::normalize() const
 {
-    RawImage retRawImage = *(new RawImage(width, height));
-    float maxLuma = *max_element(data.begin(), data.end());
-    float minLuma = *min_element(data.begin(), data.end());
+    RawImage retRawImage(width, height);
+    float maxLuma = *max_element(data.get(), data.get()+width*height);
+    float minLuma = *min_element(data.get(), data.get()+width*height);
     maxLuma -= minLuma;
     float addition = 1.0 - maxLuma;
     for(int i = 0; i < width*height; i++)
@@ -87,7 +93,7 @@ RawImage RawImage::normalize() const
 RawImage RawImage::convolute(const Kernel &kernel, const int borderProcessingType) const
 {
 
-    RawImage result = *(new RawImage(width, height));
+    RawImage result(width, height);
 
     for(int y = 0; y < height; y++){
         for(int x = 0; x < width; x++){
@@ -95,12 +101,10 @@ RawImage RawImage::convolute(const Kernel &kernel, const int borderProcessingTyp
             int curOffset = 0;
             for(int ky = -kernel.height; ky <= kernel.height; ky++){
                 for(int kx = -kernel.width; kx <= kernel.width; kx++){
-                    //qInfo() << x+kx;
-                    //qInfo() << y+ky;
-
                     res += getPixel(x + kx, y + ky, borderProcessingType) * kernel.value[curOffset++];
                 }
             }
+
             result.setPixel(x, y, res);
         }
     }
@@ -116,7 +120,7 @@ int RawImage::getPxOffset(const int x, const int y) const
 
 float RawImage::getPixel(const int x, const int y) const
 {
-    return data[getPxOffset(x,y)];
+    return data.get()[getPxOffset(x,y)];
 }
 
 float RawImage::getPixel(const int x, const int y, const int borderProcessingType) const
@@ -131,9 +135,9 @@ float RawImage::getPixel(const int x, const int y, const int borderProcessingTyp
         case BORDER_PROCESSING_TYPE_MIRROR:
         {
             if(x < 0) resX = -x;
-            if(x >= width) resX = 2 * width - x-1;
+            if(x >= width) resX = 2 * width - x - 1;
             if(y < 0) resY = -y;
-            if(y >= height) resY = 2 * height - y-1;
+            if(y >= height) resY = 2 * height - y - 1;
             break;
         }
         case BORDER_PROCESSING_TYPE_CYLINDER:
@@ -145,15 +149,11 @@ float RawImage::getPixel(const int x, const int y, const int borderProcessingTyp
             break;
         }
     }
-
-    //qInfo()<<resX;
-    //qInfo()<<resY;
-   // qInfo() << "---";
-    return data[getPxOffset(resX, resY)];
+    return data.get()[getPxOffset(resX, resY)];
 }
 
 void RawImage::setPixel(const int x, const int y, const float val){
-    data[getPxOffset(x,y)] = val;
+    data.get()[getPxOffset(x,y)] = val;
 }
 
 vector<int> RawImage::calculateKernelOffsets(const Kernel &kernel, const int width) const
