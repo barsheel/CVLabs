@@ -6,7 +6,7 @@ class Lab1
 {
 public:
     Lab1();
-
+    static RawImage::Kernel getGaussKernel(const float sigma, const int size);
     static RawImage lab1Gauss(const RawImage &image, const int strength,  const int borderProcessingType);
     static RawImage lab1Sobel(const RawImage &image, const int borderProcessingType);
 };

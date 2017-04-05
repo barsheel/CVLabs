@@ -1,6 +1,7 @@
 #include "management.h"
 #include "rawimage.h"
 #define GAUSS_STRENGTH 3
+
 class ManagementData : public QSharedData
 {
 public:
@@ -83,8 +84,7 @@ void Management::sobel(int borderType)
 {
     unique_ptr<RawImage> raw((new RawImage(*Management::currentImage.get())));
     raw = make_unique<RawImage>(
-                Lab1:: lab1Sobel(*(raw.get()),
-                            BORDER_PROCESSING_TYPE_MIRROR));
+                Lab1:: lab1Sobel(*(raw.get()), BORDER_PROCESSING_TYPE_MIRROR));
     raw = make_unique<RawImage>(raw.get()->normalize());
     Management::currentImage = make_unique<QImage>(raw->toQImage());
     drawImage();

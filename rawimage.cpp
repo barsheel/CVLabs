@@ -76,16 +76,18 @@ RawImage RawImage::normalize() const
     RawImage retRawImage(width, height);
     float maxLuma = *max_element(data.get(), data.get()+width*height);
     float minLuma = *min_element(data.get(), data.get()+width*height);
-    maxLuma -= minLuma;
-    float addition = 1.0 - maxLuma;
-    for(int i = 0; i < width*height; i++)
-    {
-        retRawImage.data[i] = ((data[i] - minLuma) + ((data[i] - minLuma) / maxLuma) * addition);
-        if(retRawImage.data[i] > 1.0)
-                    retRawImage.data[i] = 1.0;
-        else if(retRawImage.data[i] < 0.0)
-                    retRawImage.data[i] = 0.0;
-    }
+
+    float difference = maxLuma - minLuma;
+
+    for (int i = 0; i < height * height; i++) {
+            /*if(retRawImage.data[i] > 1.0)
+                        retRawImage.data[i] = 1.0;
+            else if(retRawImage.data[i] < 0.0)
+                        retRawImage.data[i] = 0.0;*/
+
+            retRawImage.data[i] = (data[i] - minLuma) / difference;
+        }
+
     return retRawImage;
 }
 
@@ -146,6 +148,14 @@ float RawImage::getPixel(const int x, const int y, const int borderProcessingTyp
             if(x >= width) resX = x - width;
             if(y < 0) resY = height - y;
             if(y >= height) resY = height - y;
+            break;
+        }
+        case BORDER_PROCESSING_TYPE_COPY:
+        {
+            if(x < 0) resX = 0;
+            if(x >= width) resX = width;
+            if(y < 0) resY = 0;
+            if(y >= height) resY = height;
             break;
         }
     }

@@ -3,7 +3,7 @@
 Lab1::Lab1()
 {}
 
-static RawImage::Kernel getGaussKernel(const int sigma, const int size)
+RawImage::Kernel Lab1::getGaussKernel(const float sigma, const int size)
 {
     RawImage::Kernel kernel;
     kernel.height = 0;
@@ -17,7 +17,7 @@ static RawImage::Kernel getGaussKernel(const int sigma, const int size)
 RawImage  Lab1::lab1Gauss(const RawImage &image, const int strength,  const int borderProcessingType)
 {
     RawImage::Kernel kernel = getGaussKernel(strength, strength * 3);
-    RawImage result(image.convolute(kernel, borderProcessingType));
+    RawImage result = *(new RawImage(image.convolute(kernel, borderProcessingType)));
     swap(kernel.width, kernel.height);
     result = result.convolute(kernel, borderProcessingType);
     return result;
