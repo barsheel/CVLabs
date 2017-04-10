@@ -125,6 +125,7 @@
     <addaction name="normalizeAction"/>
     <addaction name="gaussAction"/>
     <addaction name="sobelAction"/>
+    <addaction name="pyramidsAction"/>
     <addaction name="reloadAction"/>
    </widget>
    <addaction name="menu"/>
@@ -172,6 +173,11 @@
   <action name="reloadAction">
    <property name="text">
     <string>Отменить все изменения</string>
+   </property>
+  </action>
+  <action name="pyramidsAction">
+   <property name="text">
+    <string>Пирамиды</string>
    </property>
   </action>
  </widget>

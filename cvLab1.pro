@@ -27,11 +27,13 @@ SOURCES += main.cpp\
         mainwindow.cpp \
     rawimage.cpp \
     management.cpp \
-    lab1.cpp
+    lab1.cpp \
+    pyramid.cpp
 
 HEADERS  += mainwindow.h \
     rawimage.h \
     management.h \
-    lab1.h
+    lab1.h \
+    pyramid.h
 
 FORMS    += mainwindow.ui

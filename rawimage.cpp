@@ -159,6 +159,9 @@ float RawImage::getPixel(const int x, const int y, const int borderProcessingTyp
             break;
         }
     }
+    if(resX < 0 || resX > width || resY < 0 || resY > height){
+        qInfo() << "Ошибка!";
+    }
     return data.get()[getPxOffset(resX, resY)];
 }
 

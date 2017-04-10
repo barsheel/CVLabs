@@ -1,6 +1,10 @@
 #include "management.h"
 #include "rawimage.h"
-#define GAUSS_STRENGTH 3
+#include "pyramid.h"
+#include "qcoreapplication.h"
+#include "qdir.h"
+#include "qfile.h"
+#define GAUSS_STRENGTH 0.9
 
 class ManagementData : public QSharedData
 {
@@ -88,4 +92,28 @@ void Management::sobel(int borderType)
     raw = make_unique<RawImage>(raw.get()->normalize());
     Management::currentImage = make_unique<QImage>(raw->toQImage());
     drawImage();
+}
+
+void Management::pyramid()
+{
+    QDir dir(QCoreApplication::applicationDirPath() + "\\Pyramid\\");
+    QStringList filter;
+    filter.append("*.jpg *.jpeg");
+    QStringList files = dir.entryList(filter, QDir::Files);
+    foreach(QString file, files){
+        QFile(file).remove();
+    }
+
+    RawImage raw(*Management::currentImage.get());
+    Pyramid pyramid(raw, 1.6, 0.5, 5);
+    qInfo()<<"DONE";
+    RawImage result(raw.width, raw.height);
+    for(float k = 2.0; k < 64; k += 2){
+        for (int y = 0; y < result.height; y++) {
+            for (int x = 0; x < result.width; x++) {
+                result.data[y * result.width + x] = pyramid.L(x, y, k);
+            }
+        }
+        result.toQImage().save(QCoreApplication::applicationDirPath() + "\\Pyramid\\LResult" + QString::number(k) + ".jpeg");
+    }
 }

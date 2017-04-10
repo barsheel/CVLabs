@@ -55,3 +55,8 @@ void MainWindow::on_sobelAction_triggered()
 {
     management.get()->sobel(0);
 }
+
+void MainWindow::on_pyramidsAction_triggered()
+{
+    management.get()->pyramid();
+}

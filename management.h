@@ -35,7 +35,7 @@ public:
     void Management::normalize();
     void Management::gauss(int strength, int borderType);
     void Management::sobel(int borderType);
-
+    void Management::pyramid();
 private:
     QSharedDataPointer<ManagementData> data;
 };

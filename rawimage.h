@@ -25,7 +25,7 @@ public:
     };
 
 
-    RawImage(const QImage &source);
+    RawImage(const QImage &source); //СОХРАНЯТЬ ТОЛЬКО В JPEG
     RawImage(const RawImage &source);
     RawImage(const int sizeX, const int sizeY);
     RawImage();

@@ -31,6 +31,8 @@ private slots:
 
     void on_sobelAction_triggered();
 
+    void on_pyramidsAction_triggered();
+
 private:
     unique_ptr<Management> management;
     Ui::MainWindow *ui;
