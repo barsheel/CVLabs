@@ -5,7 +5,7 @@
 class Pyramid
 {
 public:
-    Pyramid();
+
 
     unique_ptr<RawImage[]> pImages;
        float sigmaA;
@@ -14,11 +14,12 @@ public:
        int width;
        int height;
         int octaveCount;
-       Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesPerOctave);
 
-       float L(const int x, const int y, const float sigma);
+        Pyramid();
+        Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesPerOctave);
+        Pyramid(Pyramid&& pyr) : pImages(move(pyr.pImages)) {}
 
-       Pyramid(Pyramid&& pyr) : pImages(move(pyr.pImages)) {}
+        float L(const int x, const int y, const float sigma);
 
 };
 

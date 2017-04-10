@@ -9,7 +9,6 @@ Pyramid::Pyramid()
 
 Pyramid::Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesPerOctave)
 {
-
     sigmaA = _sigmaA;
     sigma0 = _sigma0;
     scalesPerOctave = _scalesPerOctave;
@@ -18,8 +17,7 @@ Pyramid::Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesP
     this->width = curWidth;
     this->height = curHeight;
 
-    int shorterSide = min(img.width, img.height);
-    int octaveCount = (int)(log2(shorterSide)) - 1;
+    int octaveCount = (int)(log2(min(img.width, img.height))) - 1;
 
     pImages = make_unique<RawImage[]>((scalesPerOctave + 1) * octaveCount);
 
@@ -31,14 +29,10 @@ Pyramid::Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesP
 
     //первая октава
     pImages[0] = Lab1::lab1Gauss(img, sigmaBegin, BORDER_PROCESSING_TYPE_MIRROR);
-qInfo() << "1 OCTAVE";
     for (int j = 1; j < scalesPerOctave; j++)
     {
         nextSigma = curSigma * sigmaInterval;
         deltaSigma = sqrt(nextSigma * nextSigma - curSigma * curSigma);
-        qInfo() << curSigma;
-        qInfo() << nextSigma;
-        qInfo() << deltaSigma;
         pImages[j] = Lab1::lab1Gauss(pImages[j - 1], (float)deltaSigma, BORDER_PROCESSING_TYPE_MIRROR);
         curSigma = nextSigma;
     }
@@ -49,7 +43,6 @@ qInfo() << "1 OCTAVE";
         curWidth /= 2;
         curHeight /= 2;
         curSigma /= 2.0;
-
         //первое изображение октавы
         RawImage& source = pImages[i * scalesPerOctave - 1];
         pImages[i * (scalesPerOctave)] = move(*(new RawImage(curWidth, curHeight)));
@@ -64,6 +57,7 @@ qInfo() << "1 OCTAVE";
                         source.data[(y * 2 + 1) * source.width + x * 2 + 1]) / 4;
             }
         }
+
         curSigma = curSigma * sigmaInterval;
 
         //следующие изображения октавы
@@ -73,10 +67,7 @@ qInfo() << "1 OCTAVE";
             deltaSigma = sqrt(nextSigma * nextSigma - curSigma * curSigma);
                         qInfo() << deltaSigma;
             pImages[i * scalesPerOctave + j] =
-                    Lab1::lab1Gauss(
-                            pImages[i * scalesPerOctave + j - 1],
-                            (float)deltaSigma,
-                            BORDER_PROCESSING_TYPE_MIRROR);
+                    Lab1::lab1Gauss(pImages[i * scalesPerOctave + j - 1], (float)deltaSigma, BORDER_PROCESSING_TYPE_MIRROR);
             curSigma = nextSigma;
         }
     }
@@ -93,21 +84,10 @@ qInfo() << "1 OCTAVE";
 
 float Pyramid::L(const int x, const int y, const float sigma)
 {
-    int layer = (int)(log2(
-                          sigma / sigmaA) /
-                          (1.0 / scalesPerOctave));
-
-
-    if (layer < 0)
-        layer = 0;
-    if (layer >= octaveCount * scalesPerOctave)
-        layer = octaveCount * scalesPerOctave - 1;
+    int layer = (int)(log2(sigma / sigmaA) / (1.0 / scalesPerOctave));
 
     int curOct = layer / scalesPerOctave;
-
     int resultX = x, resultY = y, resultWidth = width, resultHeight = height;
-
-
 
     for(int i = 0; i < curOct; i++)
     {
