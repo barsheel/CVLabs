@@ -14,16 +14,14 @@ Pyramid::Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesP
     scalesPerOctave = _scalesPerOctave;
     int curWidth = img.width;
     int curHeight = img.height;
-    this->width = curWidth;
-    this->height = curHeight;
 
     int octaveCount = (int)(log2(min(img.width, img.height))) - 1;
 
     pImages = make_unique<RawImage[]>((scalesPerOctave + 1) * octaveCount);
 
     double sigmaInterval = exp2(1.0 / scalesPerOctave);
-    double sigmaBegin = sqrt(sigmaA * sigmaA - sigma0 * sigma0);
-    double curSigma = sigmaA;
+    double sigmaBegin = sqrt(sigma0 * sigma0 - sigmaA * sigmaA);
+    double curSigma = sigma0;
     double nextSigma;
     double deltaSigma;
 
@@ -45,18 +43,8 @@ Pyramid::Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesP
         curSigma /= 2.0;
         //первое изображение октавы
         RawImage& source = pImages[i * scalesPerOctave - 1];
-        pImages[i * (scalesPerOctave)] = move(*(new RawImage(curWidth, curHeight)));
-        for (int y = 0; y < curHeight; y++)
-        {
-            for (int x = 0; x < curWidth; x++)
-            {
-                pImages[i * (scalesPerOctave)].data[y * curWidth + x] =
-                       (source.data[y * 2 * source.width + x * 2] +
-                        source.data[y * 2 * source.width + x * 2 + 1] +
-                        source.data[(y * 2 + 1) * source.width + x * 2] +
-                        source.data[(y * 2 + 1) * source.width + x * 2 + 1]) / 4;
-            }
-        }
+
+        pImages[i * (scalesPerOctave)] = getHalfScaledImage(source);
 
         curSigma = curSigma * sigmaInterval;
 
@@ -87,18 +75,49 @@ float Pyramid::L(const int x, const int y, const float sigma)
     int layer = (int)(log2(sigma / sigmaA) / (1.0 / scalesPerOctave));
 
     int curOct = layer / scalesPerOctave;
-    int resultX = x, resultY = y, resultWidth = width, resultHeight = height;
+    int resultX = x, resultY = y, resultWidth = pImages[layer].width, resultHeight = pImages[layer].height;
 
     for(int i = 0; i < curOct; i++)
     {
         resultX = resultX / 2;
         resultY = resultY / 2;
-        resultWidth = (resultWidth) / 2 ;
-        resultHeight = (resultHeight) / 2 ;
     }
 
-    if(resultX == resultWidth) resultX--;
-    if(resultY == resultHeight) resultY--;
+    //if(resultX == resultWidth) resultX--;
+    //if(resultY == resultHeight) resultY--;
 
     return pImages[layer].data[resultY * resultWidth + resultX];
+}
+
+
+RawImage Pyramid::getHalfScaledImage(const RawImage &source)
+{
+    int newWidth = (source.width + 1) / 2;
+    int newHeight = (source.height + 1) / 2;
+    RawImage result(newWidth, newHeight);
+    for (int y = 0; y < newHeight; y++)
+    {
+        for (int x = 0; x < newWidth; x++)
+        {
+            int count = 1;
+            result.data[y * newWidth + x] = source.data[y * 2 * source.width + x * 2];
+            if(x * 2 + 1 < source.width){
+                result.data[y * newWidth + x] += source.data[y * 2 * source.width + x * 2 + 1];
+                count++;
+            }
+
+           if(y * 2 + 1< source.height){
+                result.data[y * newWidth + x] += source.data[(y * 2 + 1) * source.width + x * 2];
+                count++;
+           }
+
+           if(x * 2 + 1 < source.width && y * 2 + 1< source.height){
+                result.data[y * newWidth + x] += source.data[(y * 2 + 1) * source.width + x * 2 + 1];
+                count++;
+           }
+
+           result.data[y * newWidth + x] /= count;
+        }
+    }
+    return result;
 }

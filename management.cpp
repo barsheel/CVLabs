@@ -105,10 +105,10 @@ void Management::pyramid()
     }
 
     RawImage raw(*Management::currentImage.get());
-    Pyramid pyramid(raw, 1.6, 0.5, 5);
+    Pyramid pyramid(raw, 0.5, 1.6, 5);
     qInfo()<<"DONE";
     RawImage result(raw.width, raw.height);
-    for(float k = 2.0; k < 64; k += 2){
+    for(float k = 1.0; k < 16; k += 1){
         for (int y = 0; y < result.height; y++) {
             for (int x = 0; x < result.width; x++) {
                 result.data[y * result.width + x] = pyramid.L(x, y, k);
