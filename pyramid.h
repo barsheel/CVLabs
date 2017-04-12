@@ -24,7 +24,7 @@ public:
         }
 
         float L(const int x, const int y, const float sigma);
-
+        void savePictures(const QString path) const;
         RawImage getHalfScaledImage(const RawImage &source);
 };
 

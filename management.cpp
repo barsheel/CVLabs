@@ -106,7 +106,7 @@ void Management::pyramid()
 
     RawImage raw(*Management::currentImage.get());
     Pyramid pyramid(raw, 0.5, 1.6, 5);
-    qInfo()<<"DONE";
+    pyramid.savePictures(QCoreApplication::applicationDirPath());
     RawImage result(raw.width, raw.height);
     for(float k = 1.0; k < 16; k += 1){
         for (int y = 0; y < result.height; y++) {
@@ -116,4 +116,5 @@ void Management::pyramid()
         }
         result.toQImage().save(QCoreApplication::applicationDirPath() + "\\Pyramid\\LResult" + QString::number(k) + ".jpeg");
     }
+
 }

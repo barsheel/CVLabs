@@ -15,7 +15,7 @@ Pyramid::Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesP
     int curWidth = img.width;
     int curHeight = img.height;
 
-    int octaveCount = (int)(log2(min(img.width, img.height))) - 1;
+    octaveCount = (int)(log2(min(img.width, img.height))) - 1;
 
     pImages = make_unique<RawImage[]>((scalesPerOctave + 1) * octaveCount);
 
@@ -27,12 +27,14 @@ Pyramid::Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesP
 
     //первая октава
     pImages[0] = Lab1::lab1Gauss(img, sigmaBegin, BORDER_PROCESSING_TYPE_MIRROR);
+    qInfo() << curSigma;
     for (int j = 1; j < scalesPerOctave; j++)
     {
         nextSigma = curSigma * sigmaInterval;
         deltaSigma = sqrt(nextSigma * nextSigma - curSigma * curSigma);
         pImages[j] = Lab1::lab1Gauss(pImages[j - 1], (float)deltaSigma, BORDER_PROCESSING_TYPE_MIRROR);
         curSigma = nextSigma;
+        qInfo() << curSigma;
     }
 
     //следующие октавы
@@ -45,29 +47,20 @@ Pyramid::Pyramid(const RawImage &img, float _sigmaA, float _sigma0, int _scalesP
         RawImage& source = pImages[i * scalesPerOctave - 1];
 
         pImages[i * (scalesPerOctave)] = getHalfScaledImage(source);
-
+        qInfo() << "-------------oct";
         curSigma = curSigma * sigmaInterval;
-
+        qInfo() << curSigma * exp2(i);
         //следующие изображения октавы
         for (int j = 1; j < scalesPerOctave; j++)
         {
             nextSigma = curSigma * sigmaInterval;
             deltaSigma = sqrt(nextSigma * nextSigma - curSigma * curSigma);
-                        qInfo() << deltaSigma;
             pImages[i * scalesPerOctave + j] =
                     Lab1::lab1Gauss(pImages[i * scalesPerOctave + j - 1], (float)deltaSigma, BORDER_PROCESSING_TYPE_MIRROR);
             curSigma = nextSigma;
+            qInfo() << curSigma * exp2(i);
         }
     }
-
-    //вывод результатов
-    for(int i = 0; i < octaveCount * scalesPerOctave; i ++)
-    {
-        QString filename(QString::number(i));
-        pImages[i].toQImage().save(
-                    QCoreApplication::applicationDirPath() + "\\Pyramid\\" + filename + ".jpeg");
-    }
-
 }
 
 float Pyramid::L(const int x, const int y, const float sigma)
@@ -82,9 +75,6 @@ float Pyramid::L(const int x, const int y, const float sigma)
         resultX = resultX / 2;
         resultY = resultY / 2;
     }
-
-    //if(resultX == resultWidth) resultX--;
-    //if(resultY == resultHeight) resultY--;
 
     return pImages[layer].data[resultY * resultWidth + resultX];
 }
@@ -120,4 +110,12 @@ RawImage Pyramid::getHalfScaledImage(const RawImage &source)
         }
     }
     return result;
+}
+
+void Pyramid::savePictures(const QString path) const{
+    for(int i = 0; i < octaveCount * scalesPerOctave; i ++)
+    {
+        QString filename(QString::number(i));
+        pImages[i].toQImage().save(path + "\\Pyramid\\" + filename + ".jpeg");
+    }
 }
